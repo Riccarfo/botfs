@@ -179,3 +179,12 @@ async def support(context):
     msg = format_message("This question has been asked and answered {} our Support Forum at: "
                          "{}".format(section, url), at_users)
     await context.send(msg)
+
+
+@fs_bot.command(name="sysinfo", pass_context=True, **get_def("sysinfo"))
+@has_any_role(*get_roles())
+async def sysinfo(context):
+    """ Output System Information """
+    lookup, at_users, _ = await init_command(context)
+    msg = format_message(lookup["msg"], at_users)
+    await context.send(msg)
