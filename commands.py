@@ -75,9 +75,9 @@ async def faqs(context):
         else:
             task = faq_cache.search(search_term)
             logger.info("results: %s", task)
-            if len(task) > lookup["search_results"]:
+            if len(task) > lookup["results"]:
                 logger.info("Too many results. Limiting: %s / %s",
-                            lookup["search_results"], len(task))
+                            lookup["results"], len(task))
                 task = None
             if not task:
                 is_task = True
