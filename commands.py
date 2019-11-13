@@ -188,3 +188,21 @@ async def sysinfo(context):
     lookup, at_users, _ = await init_command(context)
     msg = format_message(lookup["msg"], at_users)
     await context.send(msg)
+
+@fs_bot.command(name="tag", pass_context=True, **get_def("tag"))
+@has_any_role(*get_roles())
+async def tag(context):
+    """ Tag search  command """
+    lookup, at_users, message = await init_command(context)
+    url = lookup["url"]
+
+    if len(message) != 2:
+        logger.debug("No or multiple tags provided")
+        return
+
+    tag = message[1]
+    url += tag
+
+    msg = "You should try these posts tagged `{}` at our forum: {}".format(tag, url)
+    msg = format_message(msg, at_users)
+    await context.send(msg)
