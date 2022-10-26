@@ -4,11 +4,15 @@
 import logging
 
 from discord.ext.commands import Bot, has_any_role
-from discord import Embed
+from discord import Embed, Intents
 from utils import format_message, get_def, get_roles, get_task, init_command, load_lookups
 from scraper import faq_cache
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
-fs_bot = Bot(command_prefix=("?", "!"))  # pylint: disable=invalid-name
+
+intents = Intents.default()
+intents.message_content = True
+
+fs_bot = Bot(intents=intents, command_prefix=("?", "!"))  # pylint: disable=invalid-name
 
 
 @fs_bot.command(name="dfl", pass_context=True, **get_def("dfl"))
