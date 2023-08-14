@@ -20,8 +20,8 @@ class FAQs():
         self.refresh = Event()
         self.interval = scrape_interval * 86400
         self.lock = Lock()
-        self._contents = dict()
-        self._search_dict = dict()
+        self._contents = {}
+        self._search_dict = {}
         thread = Thread(target=self.get_faqs, daemon=True, args=(self.loaded, self.refresh))
         thread.start()
 
@@ -56,21 +56,22 @@ class FAQs():
     def scrape_website(self):
         """ Scrape the website for latest faqs """
         logger.info("Getting HTML")
-        response = urllib.request.urlopen(self.url).read()
+        with urllib.request.urlopen(self.url) as rsp:
+            response = rsp.read()
         logger.info("Returned HTML")
         return response
 
     def set_contents(self, doc):
         """ Parse the contents section to get the links to the
             first item in each section """
-        contents = dict()
+        contents = {}
         index = [item for item in doc.xpath("//dl[@class='faq']") if not item[0].items()]
         for item in index:
             children = item.getchildren()
             heading = children[0].text_content().replace("\t",
                                                          "").lower().replace("ation",
                                                                              "").replace("ing", "")
-            link = [link for link in children[1].iterlinks()][0][2]
+            link = list(children[1].iterlinks())[0][2]
             contents[heading] = link
         with self.lock:
             self._contents = contents
@@ -78,10 +79,10 @@ class FAQs():
 
     def set_search_dict(self, doc):
         """ Parse the FAQS section to build a search dict """
-        search_dict = dict()
+        search_dict = {}
         faqs = [item for item in doc.xpath("//dl[@class='faq']") if item[0].items()]
         for item in faqs:
-            tag = "#{}".format(item[0].items()[0][1])
+            tag = f"#{item[0].items()[0][1]}"
             faq = [child.text_content().replace("\t", "") for child in item.getchildren()]
             search_dict[tag] = faq
         with self.lock:
@@ -91,7 +92,7 @@ class FAQs():
     def search(self, search_term):
         """ Search the search dict for a term and return the tag with the question """
         search_term = search_term.lower()
-        results = dict()
+        results = {}
         for key, val in self.search_dict.items():
             search_text = " ".join(val).lower()
             if search_text.count(search_term) > 0:

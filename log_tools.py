@@ -8,13 +8,13 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 
 
-def log_setup():
+def log_setup() -> None:
     """ initial log set up.
      Check valid log level supplied and set log level """
     loglevel = logging.INFO
     numeric_level = loglevel
     if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s (%s)' % loglevel, numeric_level)
+        raise ValueError(f"Invalid log level: {loglevel} ({numeric_level})")
 
     logger = logging.getLogger()
     logger.setLevel(numeric_level)
@@ -24,7 +24,7 @@ def log_setup():
                                    datefmt="%m/%d/%Y %H:%M:%S")
     stream_log_format = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s",
                                           datefmt="%m/%d/%Y %H:%M:%S")
-    
+
     pypath = os.path.dirname(os.path.realpath(sys.argv[0]))
     log_path = os.path.join(pypath, "fs_bot.log")
     log_file = TimedRotatingFileHandler(log_path, when="midnight", backupCount=14)

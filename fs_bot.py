@@ -4,7 +4,7 @@
 import logging
 from time import sleep
 
-from commands import fs_bot
+from commands import FS_BOT
 from scraper import faq_cache
 from utils import get_token
 
@@ -17,10 +17,11 @@ if __name__ == "__main__":
             break
         sleep(1)
 
-    @fs_bot.event
-    async def on_ready():
+    @FS_BOT.event
+    async def on_ready() -> None:
         """ Log facebot startup """
+        assert FS_BOT.user is not None
         logger.info("Logged in (client_name: %sm client_id: %s",
-                    fs_bot.user.name, fs_bot.user.id)
+                    FS_BOT.user.name, FS_BOT.user.id)
 
-    fs_bot.run(get_token())
+    FS_BOT.run(get_token())
