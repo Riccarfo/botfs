@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Commands for faceswap Discord bot """
 from __future__ import annotations
+import asyncio
 import logging
 import sys
 import typing as T
@@ -221,7 +222,6 @@ async def tag(context: Context) -> None:
 
 
 @FS_BOT.command(name="insightface", pass_context=True, **get_def("insightface"))
-@has_any_role(*get_roles())
 async def insightface(context: Context) -> None:
     """ Delete user message and notify user """
     command = sys._getframe(1).f_code.co_name  # pylint: disable=protected-access
@@ -231,6 +231,8 @@ async def insightface(context: Context) -> None:
     msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
            "https://faceswap.dev. With a bit more work you will almost definitely get better "
            "results with us than the Bot you were looking for. Perhaps you should stick around?")
-    user = [f"@{context.message.author.nick}"]
+    user = [f"<@{context.message.author.id}>"]
     msg = format_message(msg, user)
-    await context.send(msg)
+    sent = await context.send(msg)
+    await asyncio.sleep(300)
+    await sent.delete()
