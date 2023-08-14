@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """ Commands for faceswap Discord bot """
 from __future__ import annotations
-import typing as T
 import logging
+import sys
+import typing as T
 
 from discord.ext.commands import Bot, has_any_role
 from discord import Embed, Intents
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 INTENTS = Intents.default()
 INTENTS.message_content = True
 
-FS_BOT = Bot(intents=INTENTS, command_prefix=("?", "!"))
+FS_BOT = Bot(intents=INTENTS, command_prefix=("?", "!", "/"))
 
 
 @FS_BOT.command(name="dfl", pass_context=True, **get_def("dfl"))
@@ -216,4 +217,20 @@ async def tag(context: Context) -> None:
 
     msg = f"You should try these posts tagged `{m_tag}` at our forum: {url}"
     msg = format_message(msg, at_users)
+    await context.send(msg)
+
+
+@FS_BOT.command(name="insightface", pass_context=True, **get_def("insightface"))
+@has_any_role(*get_roles())
+async def insightface(context: Context) -> None:
+    """ Delete user message and notify user """
+    command = sys._getframe(1).f_code.co_name  # pylint: disable=protected-access
+    await context.message.delete()
+    logger.info("command: %s, call: %s", command, context.message)
+
+    msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
+           "https://faceswap.dev. With a bit more work you will almost definitely get better "
+           "results with us than the Bot you were looking for. Perhaps you should stick around?")
+    user = [context.message.author.name]
+    msg = format_message(msg, user)
     await context.send(msg)
