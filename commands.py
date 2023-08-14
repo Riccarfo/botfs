@@ -231,6 +231,6 @@ async def insightface(context: Context) -> None:
     msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
            "https://faceswap.dev. With a bit more work you will almost definitely get better "
            "results with us than the Bot you were looking for. Perhaps you should stick around?")
-    user = [f"@{context.message.author.name}"]
+    user = [f"@{context.message.author.nick}"]
     msg = format_message(msg, user)
     await context.send(msg)
