@@ -246,11 +246,21 @@ async def nobot(context: Context) -> None:
     await context.message.delete()
     logger.info("command: %s, call: %s", command, context.message)
 
+    if context.message.reference is None or context.message.reference.message_id is None:
+        logger.warning("No message replied to. Doing nothing")
+        return
+
+    channel = context.channel
+    original_msg = await channel.fetch_message(context.message.reference.message_id)
+    logger.info("Original Message: %s", original_msg)
+    await original_msg.delete()
+
     msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
            "https://faceswap.dev. With a bit more work you will almost definitely get better "
            "results with us than the Bot you were looking for. Perhaps you should stick around?")
-    #user = [f"<@{context.message.author.id}>"]
-    #msg = format_message(msg, user)
-    #sent = await context.send(msg)
-    #await asyncio.sleep(300)
-    #await sent.delete()
+
+    user = [f"<@{original_msg.author.id}>"]
+    msg = format_message(msg, user)
+    sent = await context.send(msg)
+    await asyncio.sleep(300)
+    await sent.delete()
