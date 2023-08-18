@@ -236,3 +236,21 @@ async def insightface(context: Context) -> None:
     sent = await context.send(msg)
     await asyncio.sleep(300)
     await sent.delete()
+
+
+@FS_BOT.command(name="nobot", pass_context=True, **get_def("nobot"))
+@has_any_role(*get_roles())
+async def nobot(context: Context) -> None:
+    """ Delete the replied to user's message and notify we are not a bot """
+    command = sys._getframe(1).f_code.co_name  # pylint: disable=protected-access
+    await context.message.delete()
+    logger.info("command: %s, call: %s", command, context.message)
+
+    msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
+           "https://faceswap.dev. With a bit more work you will almost definitely get better "
+           "results with us than the Bot you were looking for. Perhaps you should stick around?")
+    #user = [f"<@{context.message.author.id}>"]
+    #msg = format_message(msg, user)
+    #sent = await context.send(msg)
+    #await asyncio.sleep(300)
+    #await sent.delete()
