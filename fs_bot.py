@@ -21,7 +21,7 @@ if __name__ == "__main__":
     async def on_ready() -> None:
         """ Log facebot startup """
         assert FS_BOT.user is not None
-        logger.info("Logged in (client_name: %sm client_id: %s",
+        logger.info("Logged in (client_name: %s, client_id: %s",
                     FS_BOT.user.name, FS_BOT.user.id)
 
     FS_BOT.run(get_token())

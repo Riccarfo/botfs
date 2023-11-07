@@ -6,6 +6,7 @@ import logging
 import sys
 import typing as T
 
+import discord
 from discord.ext.commands import Bot, has_any_role
 from discord import Embed, Intents
 from utils import format_message, get_def, get_roles, get_task, init_command, load_lookups
@@ -13,15 +14,19 @@ from scraper import faq_cache
 
 if T.TYPE_CHECKING:
     from discord.ext.commands.context import Context
+    from discord.automod import AutoModAction
 
 
 logger = logging.getLogger(__name__)
 
 INTENTS = Intents.default()
 INTENTS.message_content = True
+INTENTS.members = True
 
 FS_BOT = Bot(intents=INTENTS, command_prefix=("?", "!", "/"))
 
+
+# COMMANDS
 
 @FS_BOT.command(name="dfl", pass_context=True, **get_def("dfl"))
 @has_any_role(*get_roles())
@@ -221,21 +226,21 @@ async def tag(context: Context) -> None:
     await context.send(msg)
 
 
-@FS_BOT.command(name="insightface", pass_context=True, **get_def("insightface"))
-async def insightface(context: Context) -> None:
-    """ Delete user message and notify user """
-    command = sys._getframe(1).f_code.co_name  # pylint: disable=protected-access
-    await context.message.delete()
-    logger.info("command: %s, call: %s", command, context.message)
-
-    msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
-           "https://faceswap.dev. With a bit more work you will almost definitely get better "
-           "results with us than the Bot you were looking for. Perhaps you should stick around?")
-    user = [f"<@{context.message.author.id}>"]
-    msg = format_message(msg, user)
-    sent = await context.send(msg)
-    await asyncio.sleep(300)
-    await sent.delete()
+#@FS_BOT.command(name="insightface", pass_context=True, **get_def("insightface"))
+#async def insightface(context: Context) -> None:
+#    """ Delete user message and notify user """
+#    command = sys._getframe(1).f_code.co_name  # pylint: disable=protected-access
+#    await context.message.delete()
+#    logger.info("command: %s, call: %s", command, context.message)
+#
+#    msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
+#           "https://faceswap.dev. With a bit more work you will almost definitely get better "
+#           "results with us than the Bot you were looking for. Perhaps you should stick around?")
+#    user = [f"<@{context.message.author.id}>"]
+#    msg = format_message(msg, user)
+#    sent = await context.send(msg)
+#    await asyncio.sleep(300)
+#    await sent.delete()
 
 
 @FS_BOT.command(name="nobot", pass_context=True, **get_def("nobot"))
@@ -264,3 +269,52 @@ async def nobot(context: Context) -> None:
     sent = await context.send(msg)
     await asyncio.sleep(300)
     await sent.delete()
+
+
+@FS_BOT.command(name="iwillnotusebots", pass_context=True, **get_def("iwillnotusebots"))
+async def iwillnotusebots(context: Context) -> None:
+    """ Give user full server access back """
+    command = sys._getframe(1).f_code.co_name  # pylint: disable=protected-access
+    await context.message.delete()
+    logger.info("command: %s, call: %s", command, context.message)
+    if context.channel.name != "bot-jail":
+        return
+
+    role = discord.utils.get(context.guild.roles, name="Bot Abuser")
+    await context.message.author.remove_roles(role)
+
+
+# EVENTS
+@FS_BOT.event
+async def on_automod_action(execution: AutoModAction):
+    """ On AutoMod capture of someone trying to invoke InsightFace, handle the user:
+
+    - Change role to 'Bot Abuser'
+    - Move user to bot-jail
+    - Send message explaining how to get out of jail
+    """
+    if execution.rule_id != 1171530119630831689:  # InsightFace Bot AutoMod rule
+        return
+
+    if execution.alert_system_message_id is None:  # AutoMod ephemeral response
+        return
+
+    if execution.member is None:
+        return
+
+    role = discord.utils.get(execution.guild.roles, name="Bot Abuser")
+    channel = discord.utils.get(execution.guild.channels, name="bot-jail")
+
+    await execution.member.add_roles(role)
+
+    msg = ("You appear to have landed up in the wrong Discord server. This is the Discord for "
+           "https://faceswap.dev. With a bit more work you will almost definitely get better "
+           "results with us than the Bot you were looking for.\n\n**IMPORTANT PLEASE READ**\n"
+           "Your access has been limited as this server does not support Bot commands.\n\n"
+           f"Any further attempts to issue Bot commands will land you back in {channel.mention}."
+           "\n\nYou can restore full access to this server by entering the command:\n\n"
+           "`/IWillNotUseBots`\n\n----------------------------------\n ")
+
+    user = [f"<@{execution.user_id}>"]
+    msg = format_message(msg, user)
+    await channel.send(msg)
